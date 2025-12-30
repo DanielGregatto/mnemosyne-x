@@ -1,0 +1,86 @@
+{
+  "Application": {
+    "Name": "CQRS-API-Development"
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=CqrsApiDb-Dev;Trusted_Connection=True;MultipleActiveResultSets=true"
+  },
+  "DefaultSchema": "dbo",
+  "Schema": "app_",
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Information",
+      "Microsoft.AspNetCore.Authentication": "Information",
+      "Microsoft.IdentityModel.Tokens": "Information",
+      "System.IdentityModel.Tokens.Jwt": "Information"
+    }
+  },
+  "ApplicationInsights": {
+    "InstrumentationKey": "",
+    "ConnectionString": ""
+  },
+  "EmailConfig": {
+    "Host": "smtp.mailtrap.io",
+    "SmtpPort": 587,
+    "Email": "your-dev-email@example.com",
+    "Password": "your-mailtrap-password",
+    "Name": "CQRS API Development",
+    "UseSSL": true,
+    "MainUrl": "http://localhost:4200/",
+    "MainUrlHelp": "http://localhost:4200/contact",
+    "MainUrlPayment": "http://localhost:4200/account"
+  },
+  "Jwt": {
+    "Issuer": "CQRS-API",
+    "Secret": "development-secret-key-min-32-chars-change-me-in-production",
+    "MinutesValid": "60",
+    "Audience": "http://localhost:4200/",
+    "RedirectUriExternalLogin": "http://localhost:4200/auth/external-login",
+    "RedirectUriEmailConfirm": "http://localhost:4200/auth/email-confirmed",
+    "RedirectUriResetPassword": "http://localhost:4200/auth/reset-password"
+  },
+  "ReCaptcha": {
+    "SiteKey": "your-development-recaptcha-site-key",
+    "Secret": "your-development-recaptcha-secret"
+  },
+  "Authentication": {
+    "Facebook": {
+      "AppId": "your-facebook-dev-app-id",
+      "AppSecret": "your-facebook-dev-app-secret"
+    },
+    "Google": {
+      "ClientId": "your-google-dev-client-id.apps.googleusercontent.com",
+      "ClientSecret": "your-google-dev-client-secret"
+    }
+  },
+  "AllowedHosts": "*",
+  "SecretEndpointConfig": {
+    "APIKey": "your-development-api-key-guid"
+  },
+  "AzureStorage": {
+    "ConnectionString": "",
+    "Container": "keys",
+    "BlobName": "dataprotectionkeys-dev.xml"
+  },
+  "Turnstile": {
+    "SecretKey": "your-turnstile-dev-secret-key"
+  },
+  "RateLimit": {
+    "BypassToken": "development-bypass-token",
+    "BypassHeaderName": "x-test-bypass",
+    "DefaultTokenLimit": 100,
+    "DefaultTokensPerPeriod": 100,
+    "DefaultReplenishmentPeriodSeconds": 10,
+    "BypassTokenLimit": 10000,
+    "BypassTokensPerPeriod": 10000,
+    "BypassReplenishmentPeriodSeconds": 1
+  },
+  "Cors": {
+    "AllowedOrigins": [
+      "http://localhost:4200",
+      "https://localhost:44373",
+      "http://localhost:3000"
+    ]
+  }
+}
