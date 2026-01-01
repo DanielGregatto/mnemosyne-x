@@ -134,7 +134,7 @@ namespace UI.API.Controllers
         [ProducesResponseType(typeof(ErrorResponseDto), 400)]
         public async Task<IActionResult> DeleteDocument(Guid id)
         {
-            var command = new DeleteDocumentCommand { DocumentId = id };
+            var command = new DeleteDocumentCommand();
             var result = await _mediator.SendCommand(command);
             return Response(result);
         }

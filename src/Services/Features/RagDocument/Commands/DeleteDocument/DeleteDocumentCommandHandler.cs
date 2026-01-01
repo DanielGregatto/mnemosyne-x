@@ -3,6 +3,7 @@ using Domain.DTO.Infrastructure.CQRS;
 using Domain.Interfaces;
 using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Services.Core;
 using System.Threading;
@@ -19,18 +20,21 @@ namespace Services.Features.RagDocument.Commands.DeleteDocument
         private readonly IValidator<DeleteDocumentCommand> _validator;
         private readonly IQdrantRagDocumentRepository _qdrantRepository;
         private readonly ILogger<DeleteDocumentCommandHandler> _logger;
+        private readonly IStringLocalizer<Domain.Resources.Messages> _localizer;
 
         public DeleteDocumentCommandHandler(
             AppDbContext context,
             IUser user,
             IValidator<DeleteDocumentCommand> validator,
             IQdrantRagDocumentRepository qdrantRepository,
-            ILogger<DeleteDocumentCommandHandler> logger)
+            ILogger<DeleteDocumentCommandHandler> logger,
+            IStringLocalizer<Domain.Resources.Messages> localizer)
             : base(context, user)
         {
             _validator = validator;
             _qdrantRepository = qdrantRepository;
             _logger = logger;
+            _localizer = localizer;
         }
 
         public async Task<Result<bool>> Handle(
@@ -49,7 +53,7 @@ namespace Services.Features.RagDocument.Commands.DeleteDocument
             if (!success)
             {
                 _logger.LogWarning("Failed to delete document {DocumentId}", request.DocumentId);
-                return Result<bool>.Failure($"Failed to delete document {request.DocumentId}");
+                return Result<bool>.Failure(_localizer["RagDocument_DeleteFailed", request.DocumentId]);
             }
 
             _logger.LogInformation("Successfully deleted document {DocumentId}", request.DocumentId);

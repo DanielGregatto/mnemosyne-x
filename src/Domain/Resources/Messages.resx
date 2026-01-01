@@ -367,7 +367,7 @@
   <data name="Auth_AuthResultRequired" xml:space="preserve">
     <value>Authentication result is required</value>
   </data>
-  <data name="LogError_Created" xml:space="preserve">
+  <data name="b" xml:space="preserve">
     <value>Error logged successfully</value>
   </data>
   <data name="LogError_Updated" xml:space="preserve">
@@ -510,5 +510,26 @@
   </data>
   <data name="Account_CpfCnpjInvalid" xml:space="preserve">
     <value>CPF or CNPJ must be a valid number</value>
+  </data>
+  <data name="RagDocument_NoFilesProvided" xml:space="preserve">
+    <value>No files provided</value>
+  </data>
+  <data name="RagDocument_FileEmpty" xml:space="preserve">
+    <value>File content is empty</value>
+  </data>
+  <data name="RagDocument_ChunkingFailed" xml:space="preserve">
+    <value>Failed to chunk content</value>
+  </data>
+  <data name="RagDocument_SChunks" xml:space="preserve">
+    <value>Successfully processed {0} chunks</value>
+  </data>
+  <data name="RagDocumen_SChunksWithErrors" xml:space="preserve">
+    <value>Processed {0} of {1} chunks with errors</value>
+  </data>
+  <data name="InvalidEmpty" xml:space="preserve">
+    <value>`{0}` should not be empty</value>
+  </data>
+  <data name="RagDocument_DeleteFailed" xml:space="preserve">
+    <value>Failed to delete document {0}</value>
   </data>
 </root>
