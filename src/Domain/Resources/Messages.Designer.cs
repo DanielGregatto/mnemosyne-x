@@ -682,6 +682,15 @@ namespace Domain.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error logged successfully.
+        /// </summary>
+        public static string b {
+            get {
+                return ResourceManager.GetString("b", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Client created successfully.
         /// </summary>
         public static string Client_Created {
@@ -826,6 +835,15 @@ namespace Domain.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to `{0}` should not be empty.
+        /// </summary>
+        public static string InvalidEmpty {
+            get {
+                return ResourceManager.GetString("InvalidEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid format for {0}.
         /// </summary>
         public static string InvalidFormat {
@@ -858,15 +876,6 @@ namespace Domain.Resources {
         public static string InvalidValue {
             get {
                 return ResourceManager.GetString("InvalidValue", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Error logged successfully.
-        /// </summary>
-        public static string LogError_Created {
-            get {
-                return ResourceManager.GetString("LogError_Created", resourceCulture);
             }
         }
         
@@ -1020,6 +1029,60 @@ namespace Domain.Resources {
         public static string Pagination_NoResults {
             get {
                 return ResourceManager.GetString("Pagination_NoResults", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Processed {0} of {1} chunks with errors.
+        /// </summary>
+        public static string RagDocumen_SChunksWithErrors {
+            get {
+                return ResourceManager.GetString("RagDocumen_SChunksWithErrors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to chunk content.
+        /// </summary>
+        public static string RagDocument_ChunkingFailed {
+            get {
+                return ResourceManager.GetString("RagDocument_ChunkingFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to delete document {0}.
+        /// </summary>
+        public static string RagDocument_DeleteFailed {
+            get {
+                return ResourceManager.GetString("RagDocument_DeleteFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File content is empty.
+        /// </summary>
+        public static string RagDocument_FileEmpty {
+            get {
+                return ResourceManager.GetString("RagDocument_FileEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No files provided.
+        /// </summary>
+        public static string RagDocument_NoFilesProvided {
+            get {
+                return ResourceManager.GetString("RagDocument_NoFilesProvided", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Successfully processed {0} chunks.
+        /// </summary>
+        public static string RagDocument_SChunks {
+            get {
+                return ResourceManager.GetString("RagDocument_SChunks", resourceCulture);
             }
         }
         

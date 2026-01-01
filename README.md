@@ -7,7 +7,7 @@
 
 **Memory with the X Factor**
 
-A production-ready **RAG (Retrieval-Augmented Generation)** API built with **ASP.NET Core 8.0**, featuring the innovative **Factor X algorithm** for contextual semantic search. MNEMOSYNE-X solves the critical problem of **context fragmentation** in traditional vector search by intelligently retrieving neighboring document chunks based on dynamic similarity thresholds.
+A production-ready **RAG (Retrieval-Augmented Generation)** API built with **ASP.NET Core 8**, featuring the innovative **Factor X algorithm** for contextual semantic search. MNEMOSYNE-X solves the critical problem of **context fragmentation** in traditional vector search by intelligently retrieving neighboring document chunks based on dynamic similarity thresholds.
 
 ## What Makes This Different?
 

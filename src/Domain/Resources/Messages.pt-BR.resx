@@ -367,7 +367,7 @@
   <data name="Auth_AuthResultRequired" xml:space="preserve">
     <value>Resultado de autenticação é obrigatório</value>
   </data>
-  <data name="LogError_Created" xml:space="preserve">
+  <data name="b" xml:space="preserve">
     <value>Erro registrado com sucesso</value>
   </data>
   <data name="LogError_Updated" xml:space="preserve">
@@ -510,5 +510,26 @@
   </data>
   <data name="Account_CpfCnpjInvalid" xml:space="preserve">
     <value>CPF ou CNPJ precisam ser um número válido</value>
+  </data>
+  <data name="RagDocument_NoFilesProvided" xml:space="preserve">
+    <value>Nenhum arquivo selecionado</value>
+  </data>
+  <data name="RagDocument_FileEmpty" xml:space="preserve">
+    <value>Conteúdo do arquivo está vazio</value>
+  </data>
+  <data name="RagDocument_ChunkingFailed" xml:space="preserve">
+    <value>Falha ao dividir o conteúdo em partes</value>
+  </data>
+  <data name="RagDocument_SChunks" xml:space="preserve">
+    <value>{0}  blocos processados ​​com sucesso</value>
+  </data>
+  <data name="RagDocumen_SChunksWithErrors" xml:space="preserve">
+    <value>Processados ​​{0} de {1} blocos com erros</value>
+  </data>
+  <data name="InvalidEmpty" xml:space="preserve">
+    <value>`{0}` não pode ser vazio</value>
+  </data>
+  <data name="RagDocument_DeleteFailed" xml:space="preserve">
+    <value>Falha ao deletar o documento {0}</value>
   </data>
 </root>

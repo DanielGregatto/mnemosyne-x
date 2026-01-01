@@ -1,4 +1,5 @@
 using FluentValidation;
+using Microsoft.Extensions.Localization;
 using System;
 
 namespace Services.Features.RagDocument.Commands.DeleteDocument
@@ -8,11 +9,11 @@ namespace Services.Features.RagDocument.Commands.DeleteDocument
     /// </summary>
     public class DeleteDocumentCommandValidator : AbstractValidator<DeleteDocumentCommand>
     {
-        public DeleteDocumentCommandValidator()
+        public DeleteDocumentCommandValidator(IStringLocalizer<Domain.Resources.Messages> localizer)
         {
             RuleFor(x => x.DocumentId)
                 .NotEqual(Guid.Empty)
-                .WithMessage("DocumentId cannot be empty");
+                .WithMessage(localizer["InvalidEmpty", nameof(DeleteDocumentCommand.DocumentId)]);
         }
     }
 }

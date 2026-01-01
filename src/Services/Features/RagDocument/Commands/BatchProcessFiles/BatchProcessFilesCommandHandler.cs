@@ -1,9 +1,9 @@
 using Data.Context;
-using Domain;
 using Domain.DTO.Infrastructure.CQRS;
 using Domain.DTO.Responses;
 using Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Services.Core;
 using System;
@@ -26,15 +26,18 @@ namespace Services.Features.RagDocument.Commands.BatchProcessFiles
         private readonly IAIService _aiService;
         private readonly IQdrantRagDocumentRepository _qdrantRepository;
         private readonly ILogger<BatchProcessFilesCommandHandler> _logger;
+        private readonly IStringLocalizer<Domain.Resources.Messages> _localizer;
 
         public BatchProcessFilesCommandHandler(
             AppDbContext context,
+            IStringLocalizer<Domain.Resources.Messages> localizer,
             IUser user,
             IAIService aiService,
             IQdrantRagDocumentRepository qdrantRepository,
             ILogger<BatchProcessFilesCommandHandler> logger)
             : base(context, user)
         {
+            _localizer = localizer;
             _aiService = aiService;
             _qdrantRepository = qdrantRepository;
             _logger = logger;
@@ -46,7 +49,7 @@ namespace Services.Features.RagDocument.Commands.BatchProcessFiles
         {
             if (request.Files == null || request.Files.Count == 0)
             {
-                return Result<List<ProcessFileResultDto>>.Failure("No files provided");
+                return Result<List<ProcessFileResultDto>>.Failure(_localizer["RagDocument_NoFilesProvided"]);
             }
 
             _logger.LogInformation("Batch processing {FileCount} files", request.Files.Count);
@@ -108,7 +111,7 @@ namespace Services.Features.RagDocument.Commands.BatchProcessFiles
                         TotalChunks = 0,
                         ProcessedChunks = 0,
                         Success = false,
-                        Message = "File content is empty"
+                        Message = _localizer["RagDocument_FileEmpty"]
                     };
                 }
 
@@ -123,7 +126,7 @@ namespace Services.Features.RagDocument.Commands.BatchProcessFiles
                         TotalChunks = 0,
                         ProcessedChunks = 0,
                         Success = false,
-                        Message = "Failed to chunk content"
+                        Message = _localizer["RagDocument_ChunkingFailed"]
                     };
                 }
 
@@ -204,8 +207,8 @@ namespace Services.Features.RagDocument.Commands.BatchProcessFiles
                     ProcessedChunks = processedChunks,
                     Success = processedChunks == chunks.Count,
                     Message = processedChunks == chunks.Count
-                        ? $"Successfully processed {processedChunks} chunks"
-                        : $"Processed {processedChunks} of {chunks.Count} chunks with errors"
+                        ? _localizer["RagDocument_SChunks", processedChunks]
+                        : _localizer["RagDocumen_SChunksWithErrors", processedChunks, chunks.Count]
                 };
             }
             finally
