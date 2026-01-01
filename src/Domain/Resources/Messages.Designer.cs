@@ -682,15 +682,6 @@ namespace Domain.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error logged successfully.
-        /// </summary>
-        public static string b {
-            get {
-                return ResourceManager.GetString("b", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Client created successfully.
         /// </summary>
         public static string Client_Created {
@@ -876,6 +867,15 @@ namespace Domain.Resources {
         public static string InvalidValue {
             get {
                 return ResourceManager.GetString("InvalidValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error logged successfully.
+        /// </summary>
+        public static string LogError_Created {
+            get {
+                return ResourceManager.GetString("LogError_Created", resourceCulture);
             }
         }
         

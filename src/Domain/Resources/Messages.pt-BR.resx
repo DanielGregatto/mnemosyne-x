@@ -367,7 +367,7 @@
   <data name="Auth_AuthResultRequired" xml:space="preserve">
     <value>Resultado de autenticação é obrigatório</value>
   </data>
-  <data name="b" xml:space="preserve">
+  <data name="LogError_Created" xml:space="preserve">
     <value>Erro registrado com sucesso</value>
   </data>
   <data name="LogError_Updated" xml:space="preserve">
