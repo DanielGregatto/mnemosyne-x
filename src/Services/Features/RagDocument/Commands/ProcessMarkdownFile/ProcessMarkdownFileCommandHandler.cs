@@ -1,26 +1,30 @@
 using Data.Context;
-using Domain;
 using Domain.DTO.Infrastructure.CQRS;
 using Domain.DTO.Responses;
 using Domain.Interfaces;
 using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Services.Core;
+using Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Services.Features.RagDocument.Commands.ProcessMarkdownFile
 {
     /// <summary>
-    /// Handler for processing markdown files and storing them in the RAG system
+    /// Handles the processing of markdown file commands, including validation, content chunking, embedding generation,
+    /// and document storage.
     /// </summary>
+    /// <remarks>This command handler coordinates the end-to-end workflow for ingesting markdown files into
+    /// the system. It validates the incoming command, splits the file content into overlapping chunks, generates
+    /// embeddings for each chunk (using an AI service or a deterministic fallback), and stores the resulting documents
+    /// in the Qdrant vector database. Logging and localization are integrated throughout the process. The handler
+    /// returns a result indicating the number of successfully processed chunks and any errors encountered.</remarks>
     public class ProcessMarkdownFileCommandHandler : BaseCommandHandler,
         IRequestHandler<ProcessMarkdownFileCommand, Result<ProcessFileResultDto>>
     {
@@ -28,6 +32,8 @@ namespace Services.Features.RagDocument.Commands.ProcessMarkdownFile
         private readonly IAIService _aiService;
         private readonly IQdrantRagDocumentRepository _qdrantRepository;
         private readonly ILogger<ProcessMarkdownFileCommandHandler> _logger;
+        private readonly IStringLocalizer<Domain.Resources.Messages> _localizer;
+        private readonly IRagIngestionUtilities _ragIngestionUtilities;
 
         public ProcessMarkdownFileCommandHandler(
             AppDbContext context,
@@ -35,58 +41,56 @@ namespace Services.Features.RagDocument.Commands.ProcessMarkdownFile
             IValidator<ProcessMarkdownFileCommand> validator,
             IAIService aiService,
             IQdrantRagDocumentRepository qdrantRepository,
-            ILogger<ProcessMarkdownFileCommandHandler> logger)
+            ILogger<ProcessMarkdownFileCommandHandler> logger,
+            IStringLocalizer<Domain.Resources.Messages> loalizer,
+            IRagIngestionUtilities ragIngestionUtilities)
             : base(context, user)
         {
             _validator = validator;
             _aiService = aiService;
             _qdrantRepository = qdrantRepository;
             _logger = logger;
+            _localizer = loalizer;
+            _ragIngestionUtilities = ragIngestionUtilities;
         }
 
         public async Task<Result<ProcessFileResultDto>> Handle(
             ProcessMarkdownFileCommand request,
             CancellationToken cancellationToken)
         {
-            // 1. Validate
-            var validationError = await ValidateAsync<ProcessMarkdownFileCommand, ProcessFileResultDto>(
-                _validator, request, cancellationToken);
+            var validationError = await ValidateAsync<ProcessMarkdownFileCommand, ProcessFileResultDto>(_validator, request, cancellationToken);
             if (validationError != null)
                 return validationError;
 
             string? tempFilePath = null;
             try
             {
-                // 2. Save file to temp location
+                // Save file to temp location
                 tempFilePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}_{request.File.FileName}");
                 using (var stream = new FileStream(tempFilePath, FileMode.Create))
                 {
                     await request.File.CopyToAsync(stream, cancellationToken);
                 }
 
-                // 3. Read content
+                // Read content
                 var content = await File.ReadAllTextAsync(tempFilePath, cancellationToken);
 
                 if (string.IsNullOrWhiteSpace(content))
-                {
-                    return Result<ProcessFileResultDto>.Failure("File content is empty");
-                }
+                    return Result<ProcessFileResultDto>.Failure(_localizer["RagMarkdownFile_EmptyContent"]);
 
                 _logger.LogInformation("Processing file {FileName} with {ContentLength} characters",
                     request.File.FileName, content.Length);
 
-                // 4. Chunk the content
-                var chunks = ChunkContent(content, request.ChunkSize, request.ChunkOverlap);
+                // Chunk the content
+                var chunks = _ragIngestionUtilities.ChunkContent(content, request.ChunkSize, request.ChunkOverlap);
 
                 if (chunks.Count == 0)
-                {
-                    return Result<ProcessFileResultDto>.Failure("Failed to chunk content");
-                }
+                    return Result<ProcessFileResultDto>.Failure(_localizer["RagMarkdownFile_FailedToChunk"]);
 
                 _logger.LogInformation("Created {ChunkCount} chunks from {FileName}",
                     chunks.Count, request.File.FileName);
 
-                // 5. Process each chunk
+                // Process each chunk
                 var documents = new List<Domain.RagDocument>();
                 var processedChunks = 0;
 
@@ -101,7 +105,8 @@ namespace Services.Features.RagDocument.Commands.ProcessMarkdownFile
                     {
                         _logger.LogWarning("Failed to generate embedding for chunk {ChunkIndex} of {FileName}, using fallback",
                             i, request.File.FileName);
-                        embedding = GenerateFallbackEmbedding(chunk);
+
+                        embedding = _ragIngestionUtilities.GenerateFallbackEmbedding(chunk);
                     }
 
                     // Create document
@@ -121,8 +126,8 @@ namespace Services.Features.RagDocument.Commands.ProcessMarkdownFile
                         Keywords = request.Keywords ?? string.Empty,
                         Embedding = embedding,
                         EmbeddingModel = "text-embedding-ada-002",
-                        EmbeddingHash = ComputeHash(embedding),
-                        ContentHash = ComputeHash(chunk),
+                        EmbeddingHash = _ragIngestionUtilities.ComputeHash(embedding),
+                        ContentHash = _ragIngestionUtilities.ComputeHash(chunk),
                         Version = 1,
                         LastProcessed = DateTime.UtcNow,
                         CustomMetadata = string.Empty
@@ -131,7 +136,7 @@ namespace Services.Features.RagDocument.Commands.ProcessMarkdownFile
                     documents.Add(document);
                 }
 
-                // 6. Link chunks with Previous/Next IDs
+                // Link chunks with Previous/Next IDs
                 for (int i = 0; i < documents.Count; i++)
                 {
                     if (i > 0)
@@ -141,7 +146,7 @@ namespace Services.Features.RagDocument.Commands.ProcessMarkdownFile
                         documents[i].NextDocumentId = documents[i + 1].Id;
                 }
 
-                // 7. Upsert to Qdrant
+                // Upsert to Qdrant
                 foreach (var document in documents)
                 {
                     try
@@ -159,7 +164,7 @@ namespace Services.Features.RagDocument.Commands.ProcessMarkdownFile
                 _logger.LogInformation("Successfully processed {ProcessedChunks}/{TotalChunks} chunks for {FileName}",
                     processedChunks, chunks.Count, request.File.FileName);
 
-                // 8. Return result
+                // Return result
                 var result = new ProcessFileResultDto
                 {
                     FileName = request.File.FileName,
@@ -167,8 +172,8 @@ namespace Services.Features.RagDocument.Commands.ProcessMarkdownFile
                     ProcessedChunks = processedChunks,
                     Success = processedChunks == chunks.Count,
                     Message = processedChunks == chunks.Count
-                        ? $"Successfully processed {processedChunks} chunks"
-                        : $"Processed {processedChunks} of {chunks.Count} chunks with errors"
+                        ? _localizer["RagMarkdownFile_Success", processedChunks]
+                        : _localizer["RagMarkdownFile_SuccessWithErrors", processedChunks, chunks.Count]
                 };
 
                 return Result<ProcessFileResultDto>.Success(result);
@@ -176,11 +181,11 @@ namespace Services.Features.RagDocument.Commands.ProcessMarkdownFile
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing file {FileName}", request.File.FileName);
-                return Result<ProcessFileResultDto>.Failure($"Failed to process file: {ex.Message}");
+                return Result<ProcessFileResultDto>.Failure(_localizer["RagMarkdownFile_Failed", ex.Message]);
             }
             finally
             {
-                // 9. Clean up temp file
+                // Clean up temp file
                 if (tempFilePath != null && File.Exists(tempFilePath))
                 {
                     try
@@ -193,72 +198,6 @@ namespace Services.Features.RagDocument.Commands.ProcessMarkdownFile
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Chunks content into overlapping segments
-        /// </summary>
-        private List<string> ChunkContent(string content, int chunkSize, int overlap)
-        {
-            var chunks = new List<string>();
-            var position = 0;
-
-            while (position < content.Length)
-            {
-                var remainingLength = content.Length - position;
-                var currentChunkSize = Math.Min(chunkSize, remainingLength);
-
-                var chunk = content.Substring(position, currentChunkSize);
-                chunks.Add(chunk);
-
-                // Move position forward by (chunkSize - overlap)
-                position += chunkSize - overlap;
-
-                // If we're near the end and would create a tiny chunk, stop
-                if (position >= content.Length)
-                    break;
-            }
-
-            return chunks;
-        }
-
-        /// <summary>
-        /// Generates a deterministic fallback embedding based on content hash
-        /// Used when OpenAI API is unavailable
-        /// </summary>
-        private float[] GenerateFallbackEmbedding(string content)
-        {
-            var hash = SHA256.HashData(Encoding.UTF8.GetBytes(content));
-            var embedding = new float[1536]; // Match OpenAI ada-002 dimensions
-
-            // Convert hash bytes to float values in range [-1, 1]
-            for (int i = 0; i < embedding.Length; i++)
-            {
-                var byteIndex = i % hash.Length;
-                embedding[i] = (hash[byteIndex] / 128f) - 1f;
-            }
-
-            return embedding;
-        }
-
-        /// <summary>
-        /// Computes SHA256 hash for content or embedding
-        /// </summary>
-        private string ComputeHash(string content)
-        {
-            var hash = SHA256.HashData(Encoding.UTF8.GetBytes(content));
-            return Convert.ToBase64String(hash);
-        }
-
-        /// <summary>
-        /// Computes SHA256 hash for embedding array
-        /// </summary>
-        private string ComputeHash(float[] embedding)
-        {
-            var bytes = new byte[embedding.Length * sizeof(float)];
-            Buffer.BlockCopy(embedding, 0, bytes, 0, bytes.Length);
-            var hash = SHA256.HashData(bytes);
-            return Convert.ToBase64String(hash);
         }
     }
 }

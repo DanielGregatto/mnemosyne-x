@@ -80,7 +80,7 @@ namespace IoC
 
             // Cloudflare Turnstile CAPTCHA validation service
             services.AddScoped<ITurnstileValidatorService, TurnstileValidatorService>();
-
+            
             // ============================================================================
             // EMAIL SERVICES
             // ============================================================================
@@ -89,6 +89,10 @@ namespace IoC
 
             // ASP.NET Core Identity email sender (wraps EmailService)
             services.AddSingleton<IEmailSender<ApplicationUser>, EmailService>();
+
+            //============================================================================
+            // RAG INGESTION UTILITIES
+            services.AddScoped<IRagIngestionUtilities, RagIngestionUtilities>();
 
             // ============================================================================
             // UTILITY SERVICES

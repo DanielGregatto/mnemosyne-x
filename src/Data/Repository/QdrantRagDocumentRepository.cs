@@ -86,9 +86,7 @@ namespace Data.Repository
             try
             {
                 if (document.Embedding == null || document.Embedding.Length == 0)
-                {
                     throw new ArgumentException("Document must have a valid embedding");
-                }
 
                 var pointId = document.Id.ToString();
                 var payload = CreatePayloadFromDocument(document);

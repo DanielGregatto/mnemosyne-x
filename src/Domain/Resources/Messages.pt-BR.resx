@@ -532,4 +532,28 @@
   <data name="RagDocument_DeleteFailed" xml:space="preserve">
     <value>Falha ao deletar o documento {0}</value>
   </data>
+  <data name="RagMarkdownFile_EmptyContent" xml:space="preserve">
+    <value>Conteúdo do arquivo está vazio</value>
+  </data>
+  <data name="RagMarkdownFile_FailedToChunk" xml:space="preserve">
+    <value>Falha ao dividir o conteúdo em partes</value>
+  </data>
+  <data name="RagMarkdownFile_Success" xml:space="preserve">
+    <value> {0} blocos processados ​​com sucesso</value>
+  </data>
+  <data name="RagMarkdownFile_SuccessWithErrors" xml:space="preserve">
+    <value>Processados ​​{0} de {1} blocos com erros</value>
+  </data>
+  <data name="RagMarkdownFile_Failed" xml:space="preserve">
+    <value>Falha ao processar o arquivo: {0}</value>
+  </data>
+  <data name="FileCannotExceed" xml:space="preserve">
+    <value>O tamanho do arquivo não pode exceder {0} MB</value>
+  </data>
+  <data name="RagMardownFile_ErrorAccessLevel" xml:space="preserve">
+    <value>O nível de acesso deve ser 0 (público), 1 (autenticado) ou 2 (administrador).</value>
+  </data>
+  <data name="RagMarkdownFile_InvalidChunkSize" xml:space="preserve">
+    <value>A sobreposição de blocos deve ser menor que o tamanho do bloco.</value>
+  </data>
 </root>

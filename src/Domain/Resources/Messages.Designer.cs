@@ -808,6 +808,15 @@ namespace Domain.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The file size cannot exceed {0} MB..
+        /// </summary>
+        public static string FileCannotExceed {
+            get {
+                return ResourceManager.GetString("FileCannotExceed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You don&apos;t have permission to access this resource.
         /// </summary>
         public static string ForbiddenAccess {
@@ -1083,6 +1092,69 @@ namespace Domain.Resources {
         public static string RagDocument_SChunks {
             get {
                 return ResourceManager.GetString("RagDocument_SChunks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The access level must be 0 (public), 1 (authenticated), or 2 (administrator)..
+        /// </summary>
+        public static string RagMardownFile_ErrorAccessLevel {
+            get {
+                return ResourceManager.GetString("RagMardownFile_ErrorAccessLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File content is empty.
+        /// </summary>
+        public static string RagMarkdownFile_EmptyContent {
+            get {
+                return ResourceManager.GetString("RagMarkdownFile_EmptyContent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to process file: {0}.
+        /// </summary>
+        public static string RagMarkdownFile_Failed {
+            get {
+                return ResourceManager.GetString("RagMarkdownFile_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to chunk content.
+        /// </summary>
+        public static string RagMarkdownFile_FailedToChunk {
+            get {
+                return ResourceManager.GetString("RagMarkdownFile_FailedToChunk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ChunkOverlap must be less than ChunkSize.
+        /// </summary>
+        public static string RagMarkdownFile_InvalidChunkSize {
+            get {
+                return ResourceManager.GetString("RagMarkdownFile_InvalidChunkSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Successfully processed {0} chunks.
+        /// </summary>
+        public static string RagMarkdownFile_Success {
+            get {
+                return ResourceManager.GetString("RagMarkdownFile_Success", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Processed {0} of {1} chunks with errors.
+        /// </summary>
+        public static string RagMarkdownFile_SuccessWithErrors {
+            get {
+                return ResourceManager.GetString("RagMarkdownFile_SuccessWithErrors", resourceCulture);
             }
         }
         
