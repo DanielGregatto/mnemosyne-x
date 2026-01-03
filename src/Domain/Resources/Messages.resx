@@ -532,4 +532,28 @@
   <data name="RagDocument_DeleteFailed" xml:space="preserve">
     <value>Failed to delete document {0}</value>
   </data>
+  <data name="RagMarkdownFile_EmptyContent" xml:space="preserve">
+    <value>File content is empty</value>
+  </data>
+  <data name="RagMarkdownFile_FailedToChunk" xml:space="preserve">
+    <value>Failed to chunk content</value>
+  </data>
+  <data name="RagMarkdownFile_Success" xml:space="preserve">
+    <value>Successfully processed {0} chunks</value>
+  </data>
+  <data name="RagMarkdownFile_SuccessWithErrors" xml:space="preserve">
+    <value>Processed {0} of {1} chunks with errors</value>
+  </data>
+  <data name="RagMarkdownFile_Failed" xml:space="preserve">
+    <value>Failed to process file: {0}</value>
+  </data>
+  <data name="FileCannotExceed" xml:space="preserve">
+    <value>The file size cannot exceed {0} MB.</value>
+  </data>
+  <data name="RagMardownFile_ErrorAccessLevel" xml:space="preserve">
+    <value>The access level must be 0 (public), 1 (authenticated), or 2 (administrator).</value>
+  </data>
+  <data name="RagMarkdownFile_InvalidChunkSize" xml:space="preserve">
+    <value>ChunkOverlap must be less than ChunkSize</value>
+  </data>
 </root>

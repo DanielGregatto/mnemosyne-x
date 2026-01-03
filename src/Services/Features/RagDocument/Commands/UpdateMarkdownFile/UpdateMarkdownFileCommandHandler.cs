@@ -1,5 +1,4 @@
 using Data.Context;
-using Domain;
 using Domain.DTO.Infrastructure.CQRS;
 using Domain.DTO.Responses;
 using Domain.Interfaces;
@@ -7,12 +6,11 @@ using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Services.Core;
+using Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,6 +26,7 @@ namespace Services.Features.RagDocument.Commands.UpdateMarkdownFile
         private readonly IAIService _aiService;
         private readonly IQdrantRagDocumentRepository _qdrantRepository;
         private readonly ILogger<UpdateMarkdownFileCommandHandler> _logger;
+        private readonly IRagIngestionUtilities _ragIngestionUtilities;
 
         public UpdateMarkdownFileCommandHandler(
             AppDbContext context,
@@ -35,13 +34,15 @@ namespace Services.Features.RagDocument.Commands.UpdateMarkdownFile
             IValidator<UpdateMarkdownFileCommand> validator,
             IAIService aiService,
             IQdrantRagDocumentRepository qdrantRepository,
-            ILogger<UpdateMarkdownFileCommandHandler> logger)
+            ILogger<UpdateMarkdownFileCommandHandler> logger,
+            IRagIngestionUtilities ragIngestionUtilities)
             : base(context, user)
         {
             _validator = validator;
             _aiService = aiService;
             _qdrantRepository = qdrantRepository;
             _logger = logger;
+            _ragIngestionUtilities = ragIngestionUtilities;
         }
 
         public async Task<Result<ProcessFileResultDto>> Handle(
@@ -96,7 +97,7 @@ namespace Services.Features.RagDocument.Commands.UpdateMarkdownFile
                     request.File.FileName, content.Length);
 
                 // 5. Chunk the content
-                var chunks = ChunkContent(content, request.ChunkSize, request.ChunkOverlap);
+                var chunks = _ragIngestionUtilities.ChunkContent(content, request.ChunkSize, request.ChunkOverlap);
 
                 if (chunks.Count == 0)
                 {
@@ -121,7 +122,7 @@ namespace Services.Features.RagDocument.Commands.UpdateMarkdownFile
                     {
                         _logger.LogWarning("Failed to generate embedding for chunk {ChunkIndex} of {FileName}, using fallback",
                             i, request.File.FileName);
-                        embedding = GenerateFallbackEmbedding(chunk);
+                        embedding = _ragIngestionUtilities.GenerateFallbackEmbedding(chunk);
                     }
 
                     // Create document with incremented version
@@ -141,8 +142,8 @@ namespace Services.Features.RagDocument.Commands.UpdateMarkdownFile
                         Keywords = request.Keywords ?? string.Empty,
                         Embedding = embedding,
                         EmbeddingModel = "text-embedding-ada-002",
-                        EmbeddingHash = ComputeHash(embedding),
-                        ContentHash = ComputeHash(chunk),
+                        EmbeddingHash = _ragIngestionUtilities.ComputeHash(embedding),
+                        ContentHash = _ragIngestionUtilities.ComputeHash(chunk),
                         Version = currentVersion,
                         LastProcessed = DateTime.UtcNow,
                         CustomMetadata = string.Empty
@@ -213,56 +214,6 @@ namespace Services.Features.RagDocument.Commands.UpdateMarkdownFile
                     }
                 }
             }
-        }
-
-        private List<string> ChunkContent(string content, int chunkSize, int overlap)
-        {
-            var chunks = new List<string>();
-            var position = 0;
-
-            while (position < content.Length)
-            {
-                var remainingLength = content.Length - position;
-                var currentChunkSize = Math.Min(chunkSize, remainingLength);
-
-                var chunk = content.Substring(position, currentChunkSize);
-                chunks.Add(chunk);
-
-                position += chunkSize - overlap;
-
-                if (position >= content.Length)
-                    break;
-            }
-
-            return chunks;
-        }
-
-        private float[] GenerateFallbackEmbedding(string content)
-        {
-            var hash = SHA256.HashData(Encoding.UTF8.GetBytes(content));
-            var embedding = new float[1536];
-
-            for (int i = 0; i < embedding.Length; i++)
-            {
-                var byteIndex = i % hash.Length;
-                embedding[i] = (hash[byteIndex] / 128f) - 1f;
-            }
-
-            return embedding;
-        }
-
-        private string ComputeHash(string content)
-        {
-            var hash = SHA256.HashData(Encoding.UTF8.GetBytes(content));
-            return Convert.ToBase64String(hash);
-        }
-
-        private string ComputeHash(float[] embedding)
-        {
-            var bytes = new byte[embedding.Length * sizeof(float)];
-            Buffer.BlockCopy(embedding, 0, bytes, 0, bytes.Length);
-            var hash = SHA256.HashData(bytes);
-            return Convert.ToBase64String(hash);
         }
     }
 }
