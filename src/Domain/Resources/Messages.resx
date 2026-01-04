@@ -556,4 +556,10 @@
   <data name="RagMarkdownFile_InvalidChunkSize" xml:space="preserve">
     <value>ChunkOverlap must be less than ChunkSize</value>
   </data>
+  <data name="RagMarkdownFile_UpdateSuccess" xml:space="preserve">
+    <value>Successfully updated file to version {0} with {1} chunks</value>
+  </data>
+  <data name="RagMarkdownFile_UpdateWithErrors" xml:space="preserve">
+    <value>Updated {0} of {1} chunks with errors</value>
+  </data>
 </root>

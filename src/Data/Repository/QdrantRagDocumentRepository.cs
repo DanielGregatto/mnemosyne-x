@@ -315,6 +315,27 @@ namespace Data.Repository
             }
         }
 
+        public async Task<IEnumerable<object>> GetByFileNameAsync(string existingFileName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(existingFileName))
+                    return Enumerable.Empty<object>();
+
+                var filters = new Dictionary<string, object>
+                {
+                    ["file_name"] = existingFileName
+                };
+
+                return await SearchByMetadataAsync(filters, 1000);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to get documents by file_name: {existingFileName}", existingFileName);
+                throw;
+            }
+        }
+
         public async Task<bool> DeleteAsync(Guid id)
         {
             try
