@@ -1159,6 +1159,24 @@ namespace Domain.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Successfully updated file to version {0} with {1} chunks.
+        /// </summary>
+        public static string RagMarkdownFile_UpdateSuccess {
+            get {
+                return ResourceManager.GetString("RagMarkdownFile_UpdateSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updated {0} of {1} chunks with errors.
+        /// </summary>
+        public static string RagMarkdownFile_UpdateWithErrors {
+            get {
+                return ResourceManager.GetString("RagMarkdownFile_UpdateWithErrors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} is required.
         /// </summary>
         public static string RequiredField {

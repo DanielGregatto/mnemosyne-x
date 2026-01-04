@@ -50,6 +50,14 @@ namespace Domain.Interfaces
         Task<IEnumerable<object>> GetBySourceAsync(string source);
 
         /// <summary>
+        /// Asynchronously retrieves all objects associated with the specified file name.
+        /// </summary>
+        /// <param name="existingFileName">The name of the file to search for. Cannot be <see langword="null"/> or empty.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a collection of objects
+        /// associated with the specified file name. The collection is empty if no objects are found.</returns>
+        Task<IEnumerable<object>> GetByFileNameAsync(string existingFileName);
+
+        /// <summary>
         /// Delete document by ID
         /// </summary>
         Task<bool> DeleteAsync(Guid id);
@@ -67,6 +75,6 @@ namespace Domain.Interfaces
         /// <summary>
         /// Get statistics (by category, source, etc.)
         /// </summary>
-        Task<object> GetStatisticsAsync();
+        Task<object> GetStatisticsAsync();        
     }
 }

@@ -556,4 +556,10 @@
   <data name="RagMarkdownFile_InvalidChunkSize" xml:space="preserve">
     <value>A sobreposição de blocos deve ser menor que o tamanho do bloco.</value>
   </data>
+  <data name="RagMarkdownFile_UpdateSuccess" xml:space="preserve">
+    <value>Arquivo atualizado com sucesso para a versão {0} com {1} blocos.</value>
+  </data>
+  <data name="RagMarkdownFile_UpdateWithErrors" xml:space="preserve">
+    <value>Atualizado {0} de {1} blocos com erros</value>
+  </data>
 </root>

@@ -1,4 +1,6 @@
 using FluentValidation;
+using Microsoft.Extensions.Localization;
+using Services.Features.RagDocument.Commands.ProcessMarkdownFile;
 using System.IO;
 using System.Linq;
 
@@ -12,62 +14,62 @@ namespace Services.Features.RagDocument.Commands.UpdateMarkdownFile
         private const long MaxFileSizeBytes = 10 * 1024 * 1024; // 10 MB
         private static readonly string[] AllowedExtensions = { ".md", ".markdown" };
 
-        public UpdateMarkdownFileCommandValidator()
+        public UpdateMarkdownFileCommandValidator(IStringLocalizer<Domain.Resources.Messages> localizer)
         {
             RuleFor(x => x.ExistingFileName)
                 .NotEmpty()
-                .WithMessage("ExistingFileName is required")
+                .WithMessage(localizer["RequiredField", nameof(UpdateMarkdownFileCommand.ExistingFileName)])
                 .MaximumLength(255)
-                .WithMessage("ExistingFileName cannot exceed 255 characters");
+                .WithMessage(localizer["MaxLength", nameof(UpdateMarkdownFileCommand.ExistingFileName), 255]);
 
             RuleFor(x => x.File)
                 .NotNull()
-                .WithMessage("File is required");
+                .WithMessage(localizer["RequiredField", nameof(UpdateMarkdownFileCommand.File)]);
 
             RuleFor(x => x.File.Length)
                 .GreaterThan(0)
-                .WithMessage("File cannot be empty")
+                .WithMessage(localizer["InvalidEmpty", nameof(ProcessMarkdownFileCommand.File)])
                 .LessThanOrEqualTo(MaxFileSizeBytes)
-                .WithMessage($"File size cannot exceed {MaxFileSizeBytes / 1024 / 1024} MB")
+                .WithMessage(localizer["File_TooLarge", (MaxFileSizeBytes / 1024 / 1024)])
                 .When(x => x.File != null);
 
             RuleFor(x => x.File.FileName)
                 .Must(HaveValidExtension)
-                .WithMessage($"Only markdown files are allowed ({string.Join(", ", AllowedExtensions)})")
+                .WithMessage(localizer["File_InvalidFormat", string.Join(", ", AllowedExtensions)])
                 .When(x => x.File != null);
 
             RuleFor(x => x.Category)
                 .NotEmpty()
-                .WithMessage("Category is required")
+                .WithMessage(localizer["RequiredField", nameof(ProcessMarkdownFileCommand.Category)])
                 .MaximumLength(100)
-                .WithMessage("Category cannot exceed 100 characters");
+                .WithMessage(localizer["MaxLength", nameof(ProcessMarkdownFileCommand.Category), 100]);
 
             RuleFor(x => x.Weight)
                 .InclusiveBetween(1, 10)
-                .WithMessage("Weight must be between 1 and 10");
+                .WithMessage(localizer["InvalidRange", nameof(ProcessMarkdownFileCommand.Weight), 1, 10]);
 
             RuleFor(x => x.AccessLevel)
                 .InclusiveBetween(0, 2)
-                .WithMessage("AccessLevel must be 0 (public), 1 (authenticated), or 2 (admin)");
+                .WithMessage(localizer["RagMardownFile_ErrorAccessLevel"]);
 
             RuleFor(x => x.ChunkSize)
                 .InclusiveBetween(100, 4000)
-                .WithMessage("ChunkSize must be between 100 and 4000 characters");
+                .WithMessage(localizer["InvalidRange", nameof(ProcessMarkdownFileCommand.ChunkSize), 100, 4000]);
 
             RuleFor(x => x.ChunkOverlap)
                 .GreaterThanOrEqualTo(0)
-                .WithMessage("ChunkOverlap cannot be negative")
+                .WithMessage(localizer["MustBeGreaterThan", nameof(ProcessMarkdownFileCommand.ChunkOverlap), 0])
                 .LessThan(x => x.ChunkSize)
-                .WithMessage("ChunkOverlap must be less than ChunkSize");
+                .WithMessage(localizer["RagMarkdownFile_InvalidChunkSize"]);
 
             RuleFor(x => x.Keywords)
                 .MaximumLength(500)
-                .WithMessage("Keywords cannot exceed 500 characters")
+                .WithMessage(localizer["MaxLength", nameof(ProcessMarkdownFileCommand.Keywords), 500])
                 .When(x => !string.IsNullOrEmpty(x.Keywords));
 
             RuleFor(x => x.Source)
                 .MaximumLength(200)
-                .WithMessage("Source cannot exceed 200 characters")
+                .WithMessage(localizer["MaxLength", nameof(ProcessMarkdownFileCommand.Source), 200])
                 .When(x => !string.IsNullOrEmpty(x.Source));
         }
 

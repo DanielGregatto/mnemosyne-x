@@ -4,6 +4,7 @@ using Domain.DTO.Responses;
 using Domain.Interfaces;
 using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Services.Core;
 using Services.Interfaces;
@@ -27,6 +28,7 @@ namespace Services.Features.RagDocument.Commands.UpdateMarkdownFile
         private readonly IQdrantRagDocumentRepository _qdrantRepository;
         private readonly ILogger<UpdateMarkdownFileCommandHandler> _logger;
         private readonly IRagIngestionUtilities _ragIngestionUtilities;
+        private readonly IStringLocalizer<Domain.Resources.Messages> _localizer;
 
         public UpdateMarkdownFileCommandHandler(
             AppDbContext context,
@@ -35,7 +37,8 @@ namespace Services.Features.RagDocument.Commands.UpdateMarkdownFile
             IAIService aiService,
             IQdrantRagDocumentRepository qdrantRepository,
             ILogger<UpdateMarkdownFileCommandHandler> logger,
-            IRagIngestionUtilities ragIngestionUtilities)
+            IRagIngestionUtilities ragIngestionUtilities,
+            IStringLocalizer<Domain.Resources.Messages> localizer)
             : base(context, user)
         {
             _validator = validator;
@@ -43,25 +46,25 @@ namespace Services.Features.RagDocument.Commands.UpdateMarkdownFile
             _qdrantRepository = qdrantRepository;
             _logger = logger;
             _ragIngestionUtilities = ragIngestionUtilities;
+            _localizer = localizer;
         }
 
         public async Task<Result<ProcessFileResultDto>> Handle(
             UpdateMarkdownFileCommand request,
             CancellationToken cancellationToken)
         {
-            // 1. Validate
-            var validationError = await ValidateAsync<UpdateMarkdownFileCommand, ProcessFileResultDto>(
-                _validator, request, cancellationToken);
+            // Validate
+            var validationError = await ValidateAsync<UpdateMarkdownFileCommand, ProcessFileResultDto>(_validator, request, cancellationToken);
             if (validationError != null)
                 return validationError;
 
             string? tempFilePath = null;
             try
             {
-                // 2. Delete existing file chunks
+                // Delete existing file chunks
                 _logger.LogInformation("Deleting existing chunks for file {ExistingFileName}", request.ExistingFileName);
 
-                var existingDocuments = await _qdrantRepository.GetBySourceAsync(request.ExistingFileName);
+                var existingDocuments = await _qdrantRepository.GetByFileNameAsync(request.ExistingFileName);
                 var existingList = existingDocuments.Cast<Domain.RagDocument>().ToList();
 
                 var currentVersion = 1;
@@ -78,36 +81,32 @@ namespace Services.Features.RagDocument.Commands.UpdateMarkdownFile
                         existingList.Count, request.ExistingFileName);
                 }
 
-                // 3. Save new file to temp location
+                // Save new file to temp location
                 tempFilePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}_{request.File.FileName}");
                 using (var stream = new FileStream(tempFilePath, FileMode.Create))
                 {
                     await request.File.CopyToAsync(stream, cancellationToken);
                 }
 
-                // 4. Read content
+                // Read content
                 var content = await File.ReadAllTextAsync(tempFilePath, cancellationToken);
 
                 if (string.IsNullOrWhiteSpace(content))
-                {
-                    return Result<ProcessFileResultDto>.Failure("File content is empty");
-                }
+                    return Result<ProcessFileResultDto>.Failure(_localizer["RagMarkdownFile_EmptyContent"]);
 
                 _logger.LogInformation("Processing updated file {FileName} with {ContentLength} characters",
                     request.File.FileName, content.Length);
 
-                // 5. Chunk the content
+                // Chunk the content
                 var chunks = _ragIngestionUtilities.ChunkContent(content, request.ChunkSize, request.ChunkOverlap);
 
                 if (chunks.Count == 0)
-                {
-                    return Result<ProcessFileResultDto>.Failure("Failed to chunk content");
-                }
+                    return Result<ProcessFileResultDto>.Failure(_localizer["RagMarkdownFile_FailedToChunk"]);
 
                 _logger.LogInformation("Created {ChunkCount} chunks from {FileName}",
                     chunks.Count, request.File.FileName);
 
-                // 6. Process each chunk
+                // Process each chunk
                 var documents = new List<Domain.RagDocument>();
                 var processedChunks = 0;
 
@@ -122,6 +121,7 @@ namespace Services.Features.RagDocument.Commands.UpdateMarkdownFile
                     {
                         _logger.LogWarning("Failed to generate embedding for chunk {ChunkIndex} of {FileName}, using fallback",
                             i, request.File.FileName);
+
                         embedding = _ragIngestionUtilities.GenerateFallbackEmbedding(chunk);
                     }
 
@@ -152,7 +152,7 @@ namespace Services.Features.RagDocument.Commands.UpdateMarkdownFile
                     documents.Add(document);
                 }
 
-                // 7. Link chunks with Previous/Next IDs
+                // Link chunks with Previous/Next IDs
                 for (int i = 0; i < documents.Count; i++)
                 {
                     if (i > 0)
@@ -162,7 +162,7 @@ namespace Services.Features.RagDocument.Commands.UpdateMarkdownFile
                         documents[i].NextDocumentId = documents[i + 1].Id;
                 }
 
-                // 8. Upsert to Qdrant
+                // Upsert to Qdrant
                 foreach (var document in documents)
                 {
                     try
@@ -180,7 +180,7 @@ namespace Services.Features.RagDocument.Commands.UpdateMarkdownFile
                 _logger.LogInformation("Successfully updated file {FileName} - version {Version} with {ProcessedChunks}/{TotalChunks} chunks",
                     request.File.FileName, currentVersion, processedChunks, chunks.Count);
 
-                // 9. Return result
+                // Return result
                 var result = new ProcessFileResultDto
                 {
                     FileName = request.File.FileName,
@@ -188,8 +188,8 @@ namespace Services.Features.RagDocument.Commands.UpdateMarkdownFile
                     ProcessedChunks = processedChunks,
                     Success = processedChunks == chunks.Count,
                     Message = processedChunks == chunks.Count
-                        ? $"Successfully updated file to version {currentVersion} with {processedChunks} chunks"
-                        : $"Updated {processedChunks} of {chunks.Count} chunks with errors"
+                        ? _localizer["RagMarkdownFile_UpdateSuccess", currentVersion, processedChunks]
+                        : _localizer["RagMarkdownFile_UpdateWithErrors", processedChunks, chunks.Count]
                 };
 
                 return Result<ProcessFileResultDto>.Success(result);
@@ -197,11 +197,11 @@ namespace Services.Features.RagDocument.Commands.UpdateMarkdownFile
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating file {FileName}", request.File.FileName);
-                return Result<ProcessFileResultDto>.Failure($"Failed to update file: {ex.Message}");
+                return Result<ProcessFileResultDto>.Failure(_localizer["RagMarkdownFile_Failed", ex.Message]);
             }
             finally
             {
-                // 10. Clean up temp file
+                // Clean up temp file
                 if (tempFilePath != null && File.Exists(tempFilePath))
                 {
                     try
