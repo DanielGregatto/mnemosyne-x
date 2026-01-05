@@ -7,8 +7,8 @@ namespace Domain.Core.Events.Interfaces
     /// </summary>
     public interface IHasDomainEvents
     {
-        public IReadOnlyCollection<IDomainEvent> DomainEvents { get; }
-        public void RaiseDomainEvent(IDomainEvent evt);
+        public IReadOnlyCollection<object> DomainEvents { get; }
+        public void RaiseDomainEvent(object evt);
         public void ClearDomainEvents();
     }
 }

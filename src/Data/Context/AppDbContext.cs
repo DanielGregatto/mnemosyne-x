@@ -1,4 +1,5 @@
-﻿using Domain.Core.Events;
+﻿using Data.Events;
+using Data.Events.Interfaces;
 using Domain.Core.Events.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -44,56 +45,48 @@ namespace Data.Context
             }
         }
 
-        /// <summary>
-        /// Automatically raises domain events for inserted, updated, and deleted entities before saving
-        /// </summary>
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            // Get all entities that support domain events and have state changes
-            var entitiesWithEvents = ChangeTracker.Entries()
-                .Where(e => e.Entity is IHasDomainEvents)
-                .Where(e => e.State == EntityState.Added ||
-                           e.State == EntityState.Modified ||
-                           e.State == EntityState.Deleted)
-                .ToList();
+            var entries = ChangeTracker.Entries()
+                                       .Where(e => e.State is EntityState.Added
+                                                           or EntityState.Modified
+                                                           or EntityState.Deleted)
+                                       .ToList();
 
-            // Raise appropriate domain events based on entity state
-            foreach (var entry in entitiesWithEvents)
+            foreach (var entry in entries)
             {
-                var entity = (IHasDomainEvents)entry.Entity;
-                var entityType = entry.Entity.GetType();
+                if (entry.Entity is not IHasDomainEvents hasEvents)
+                    continue;
 
-                // Create generic event type based on entity type
-                switch (entry.State)
+                var entity = entry.Entity;
+                var entityType = entity.GetType();
+
+                object notification = entry.State switch
                 {
-                    case EntityState.Added:
-                        var insertedEventType = typeof(EntityInsertedEvent<>).MakeGenericType(entityType);
-                        var insertedEvent = (IDomainEvent)Activator.CreateInstance(insertedEventType, entry.Entity);
-                        entity.RaiseDomainEvent(insertedEvent);
-                        break;
+                    EntityState.Added =>
+                        CreateInfraEvent(typeof(EntityInsertedEvent<>), entityType, entity),
 
-                    case EntityState.Modified:
-                        var updatedEventType = typeof(EntityUpdatedEvent<>).MakeGenericType(entityType);
-                        var updatedEvent = (IDomainEvent)Activator.CreateInstance(updatedEventType, entry.Entity);
-                        entity.RaiseDomainEvent(updatedEvent);
-                        break;
+                    EntityState.Modified =>
+                        CreateInfraEvent(typeof(EntityUpdatedEvent<>), entityType, entity),
 
-                    case EntityState.Deleted:
-                        var deletedEventType = typeof(EntityDeletedEvent<>).MakeGenericType(entityType);
-                        var deletedEvent = (IDomainEvent)Activator.CreateInstance(deletedEventType, entry.Entity);
-                        entity.RaiseDomainEvent(deletedEvent);
-                        break;
-                }
+                    EntityState.Deleted =>
+                        CreateInfraEvent(typeof(EntityDeletedEvent<>), entityType, entity),
+
+                    _ => null
+                };
+
+                if (notification != null)
+                    hasEvents.RaiseDomainEvent(notification);
             }
 
-            // Save changes to database
             return await base.SaveChangesAsync(cancellationToken);
         }
+
 
         /// <summary>
         /// Gets all domain events from tracked entities
         /// </summary>
-        public IEnumerable<IDomainEvent> GetDomainEvents()
+        public IEnumerable<object> GetDomainEvents()
         {
             return ChangeTracker.Entries()
                 .Where(e => e.Entity is IHasDomainEvents)
@@ -114,6 +107,12 @@ namespace Data.Context
                 .Where(e => e.DomainEvents.Any())
                 .ToList()
                 .ForEach(e => e.ClearDomainEvents());
+        }
+
+        private static object CreateInfraEvent(Type openGenericEventType, Type entityType, object entity)
+        {
+            var closedType = openGenericEventType.MakeGenericType(entityType);
+            return Activator.CreateInstance(closedType, entity)!;
         }
     }
 }
