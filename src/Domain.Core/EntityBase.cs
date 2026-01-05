@@ -11,7 +11,7 @@ namespace Domain.Core
             Id = Guid.NewGuid();
             CreatedAt = DateTime.UtcNow;
             Deleted = false;
-            _domainEvents = new List<IDomainEvent>();
+            _domainEvents = new List<object>();
         }
         public Guid Id { get; set; }
 
@@ -19,9 +19,9 @@ namespace Domain.Core
 
         public bool Deleted { get; set; }
 
-        public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+        public IReadOnlyCollection<object> DomainEvents => _domainEvents.AsReadOnly();
 
-        private readonly List<IDomainEvent> _domainEvents;
+        private readonly List<object> _domainEvents;
 
         public override bool Equals(object obj)
         {
@@ -54,10 +54,11 @@ namespace Domain.Core
             return Id.GetHashCode();
         }
 
-        public void RaiseDomainEvent(IDomainEvent evt)
+        public void RaiseDomainEvent(object evt)
         {
             _domainEvents.Add(evt);
         }
+
         public void ClearDomainEvents()
         {
             _domainEvents.Clear();
