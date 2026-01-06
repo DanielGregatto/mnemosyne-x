@@ -126,5 +126,27 @@ namespace Domain
         /// Populated during Factor X expansion in search queries
         /// </summary>
         public List<RagDocument> BackgroundInformation { get; set; }
+
+        public RagDocumentDto MapToDto()
+        {
+            return new RagDocumentDto
+            {
+                Id = this.Id,
+                FileName = this.FileName,
+                Content = this.Content,
+                Source = this.Source,
+                Category = this.Category,
+                Weight = this.Weight,
+                AccessLevel = this.AccessLevel,
+                ChunkIndex = this.ChunkIndex,
+                TotalChunks = this.TotalChunks,
+                FilePath = this.FilePath,
+                FileSize = this.FileSize,
+                Keywords = this.Keywords,
+                EmbeddingModel = this.EmbeddingModel,
+                Version = this.Version,
+                LastProcessed = this.LastProcessed
+            };
+        }
     }
 }

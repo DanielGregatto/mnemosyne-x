@@ -1087,6 +1087,24 @@ namespace Domain.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You do not have permission to access this document.
+        /// </summary>
+        public static string RagDocument_NoPermissionToAccess {
+            get {
+                return ResourceManager.GetString("RagDocument_NoPermissionToAccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Document {0} not found.
+        /// </summary>
+        public static string RagDocument_NotFound {
+            get {
+                return ResourceManager.GetString("RagDocument_NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Successfully processed {0} chunks.
         /// </summary>
         public static string RagDocument_SChunks {
