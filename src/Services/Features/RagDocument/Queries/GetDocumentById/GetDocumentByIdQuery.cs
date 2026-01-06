@@ -6,13 +6,12 @@ using System;
 namespace Services.Features.RagDocument.Queries.GetDocumentById
 {
     /// <summary>
-    /// Query to get a specific RAG document by ID
+    /// Represents a request to retrieve a document by its unique identifier.
     /// </summary>
+    /// <remarks>This query is typically used with a mediator pattern to fetch a <see cref="RagDocumentDto"/>
+    /// corresponding to the specified <see cref="DocumentId"/>.</remarks>
     public class GetDocumentByIdQuery : IRequest<Result<RagDocumentDto>>
     {
-        /// <summary>
-        /// The ID of the document to retrieve
-        /// </summary>
         public Guid DocumentId { get; set; }
     }
 }

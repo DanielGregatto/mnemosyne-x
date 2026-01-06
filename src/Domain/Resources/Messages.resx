@@ -562,4 +562,10 @@
   <data name="RagMarkdownFile_UpdateWithErrors" xml:space="preserve">
     <value>Updated {0} of {1} chunks with errors</value>
   </data>
+  <data name="RagDocument_NotFound" xml:space="preserve">
+    <value>Document {0} not found</value>
+  </data>
+  <data name="RagDocument_NoPermissionToAccess" xml:space="preserve">
+    <value>You do not have permission to access this document</value>
+  </data>
 </root>
