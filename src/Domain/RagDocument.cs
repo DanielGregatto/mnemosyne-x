@@ -127,6 +127,13 @@ namespace Domain
         /// </summary>
         public List<RagDocument> BackgroundInformation { get; set; }
 
+        /// <summary>
+        /// Maps the current <see cref="RagDocument"/> instance to a <see cref="RagDocumentDto"/> object.
+        /// </summary>
+        /// <remarks>This method creates a new <see cref="RagDocumentDto"/> and copies all relevant
+        /// properties from the current <see cref="RagDocument"/>. Use this method to convert domain entities to data
+        /// transfer objects for serialization, transport, or API responses.</remarks>
+        /// <returns>A <see cref="RagDocumentDto"/> containing the property values of the current <see cref="RagDocument"/>.</returns>
         public RagDocumentDto MapToDto()
         {
             return new RagDocumentDto

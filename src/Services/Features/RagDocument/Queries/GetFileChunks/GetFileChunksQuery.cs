@@ -6,13 +6,12 @@ using System.Collections.Generic;
 namespace Services.Features.RagDocument.Queries.GetFileChunks
 {
     /// <summary>
-    /// Query to get all chunks of a file by filename
+    /// Represents a query to retrieve the list of document chunks associated with a specified file.
     /// </summary>
+    /// <remarks>This query is typically used to obtain segmented content from a file for further processing
+    /// or analysis.</remarks>
     public class GetFileChunksQuery : IRequest<Result<List<RagDocumentDto>>>
     {
-        /// <summary>
-        /// The filename of the chunks to retrieve
-        /// </summary>
         public string FileName { get; set; }
     }
 }
